@@ -1,5 +1,5 @@
 /**
- *    Copyright 2006-2017 the original author or authors.
+ *    Copyright 2006-2018 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -65,22 +65,37 @@ public class UpdateByPrimaryKeySelectiveElementGenerator extends
 
         for (IntrospectedColumn introspectedColumn : ListUtilities.removeGeneratedAlwaysColumns(introspectedTable
                 .getNonPrimaryKeyColumns())) {
-            sb.setLength(0);
-            sb.append(introspectedColumn.getJavaProperty());
-            sb.append(" != null"); //$NON-NLS-1$
-            XmlElement isNotNullElement = new XmlElement("if"); //$NON-NLS-1$
-            isNotNullElement.addAttribute(new Attribute("test", sb.toString())); //$NON-NLS-1$
-            dynamicElement.addElement(isNotNullElement);
 
-            sb.setLength(0);
-            sb.append(MyBatis3FormattingUtilities
-                    .getEscapedColumnName(introspectedColumn));
-            sb.append(" = "); //$NON-NLS-1$
-            sb.append(MyBatis3FormattingUtilities
-                    .getParameterClause(introspectedColumn));
-            sb.append(',');
+            if(MyBatis3FormattingUtilities
+                    .getEscapedColumnName(introspectedColumn).equals("Fmodify_time")){
+                sb.setLength(0);
+                sb.append(MyBatis3FormattingUtilities
+                        .getEscapedColumnName(introspectedColumn));
+                sb.append(" = "); //$NON-NLS-1$
+                sb.append("now()");
+                sb.append(',');
 
-            isNotNullElement.addElement(new TextElement(sb.toString()));
+                dynamicElement.addElement(new TextElement(sb.toString()));
+            }else {
+                sb.setLength(0);
+                sb.append(introspectedColumn.getJavaProperty());
+                sb.append(" != null"); //$NON-NLS-1$
+                XmlElement isNotNullElement = new XmlElement("if"); //$NON-NLS-1$
+                isNotNullElement.addAttribute(new Attribute("test", sb.toString())); //$NON-NLS-1$
+                dynamicElement.addElement(isNotNullElement);
+
+                sb.setLength(0);
+                sb.append(MyBatis3FormattingUtilities
+                        .getEscapedColumnName(introspectedColumn));
+                sb.append(" = "); //$NON-NLS-1$
+                sb.append(MyBatis3FormattingUtilities
+                        .getParameterClause(introspectedColumn));
+                sb.append(',');
+
+                isNotNullElement.addElement(new TextElement(sb.toString()));
+            }
+
+
         }
 
         boolean and = false;

@@ -1,5 +1,5 @@
 /**
- *    Copyright 2006-2016 the original author or authors.
+ *    Copyright 2006-2018 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -73,6 +73,16 @@ public class SelectByExampleWithoutBLOBsElementGenerator extends
         ifElement = new XmlElement("if"); //$NON-NLS-1$
         ifElement.addAttribute(new Attribute("test", "orderByClause != null")); //$NON-NLS-1$ //$NON-NLS-2$
         ifElement.addElement(new TextElement("order by ${orderByClause}")); //$NON-NLS-1$
+        answer.addElement(ifElement);
+
+        ifElement = new XmlElement("if"); //$NON-NLS-1$
+        ifElement.addAttribute(new Attribute("test", "limit != null")); //$NON-NLS-1$ //$NON-NLS-2$
+        ifElement.addElement(new TextElement("limit ${limit}")); //$NON-NLS-1$
+
+        XmlElement oifElement = new XmlElement("if"); //$NON-NLS-1$
+        oifElement.addAttribute(new Attribute("test", "offset != null")); //$NON-NLS-1$ //$NON-NLS-2$
+        oifElement.addElement(new TextElement("offset ${offset}")); //$NON-NLS-1$
+        ifElement.addElement(oifElement);
         answer.addElement(ifElement);
 
         if (context.getPlugins()

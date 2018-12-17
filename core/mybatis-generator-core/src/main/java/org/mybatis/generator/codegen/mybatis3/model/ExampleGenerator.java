@@ -26,15 +26,9 @@ import java.util.List;
 import org.mybatis.generator.api.CommentGenerator;
 import org.mybatis.generator.api.FullyQualifiedTable;
 import org.mybatis.generator.api.IntrospectedColumn;
+import org.mybatis.generator.api.IntrospectedTable;
 import org.mybatis.generator.api.dom.OutputUtilities;
-import org.mybatis.generator.api.dom.java.CompilationUnit;
-import org.mybatis.generator.api.dom.java.Field;
-import org.mybatis.generator.api.dom.java.FullyQualifiedJavaType;
-import org.mybatis.generator.api.dom.java.InnerClass;
-import org.mybatis.generator.api.dom.java.JavaVisibility;
-import org.mybatis.generator.api.dom.java.Method;
-import org.mybatis.generator.api.dom.java.Parameter;
-import org.mybatis.generator.api.dom.java.TopLevelClass;
+import org.mybatis.generator.api.dom.java.*;
 import org.mybatis.generator.codegen.AbstractJavaGenerator;
 import org.mybatis.generator.codegen.mybatis3.MyBatis3FormattingUtilities;
 
@@ -45,8 +39,30 @@ import org.mybatis.generator.codegen.mybatis3.MyBatis3FormattingUtilities;
  */
 public class ExampleGenerator extends AbstractJavaGenerator {
 
+
     public ExampleGenerator(String project) {
         super(project);
+    }
+
+    public void add(String name, FullyQualifiedJavaType type, CommentGenerator commentGenerator, AbstractJavaType topLevelClass, IntrospectedTable introspectedTable) {
+        Field field = new Field(name, type); //$NON-NLS-1$
+        field.setVisibility(JavaVisibility.PROTECTED);
+        commentGenerator.addFieldComment(field, introspectedTable);
+        topLevelClass.addField(field);
+
+        Method method = new Method("set" + name.substring(0, 1).toUpperCase() + name.substring(1)); //$NON-NLS-1$
+        method.setVisibility(JavaVisibility.PUBLIC);
+        method.addParameter(new Parameter(type, name)); //$NON-NLS-1$
+        method.addBodyLine("this." + name + " = " + name + ";"); //$NON-NLS-1$
+        commentGenerator.addGeneralMethodComment(method, introspectedTable);
+        topLevelClass.addMethod(method);
+
+        method = new Method("get" + name.substring(0, 1).toUpperCase() + name.substring(1)); //$NON-NLS-1$
+        method.setVisibility(JavaVisibility.PUBLIC);
+        method.setReturnType(type);
+        method.addBodyLine("return " + name + ";"); //$NON-NLS-1$
+        commentGenerator.addGeneralMethodComment(method, introspectedTable);
+        topLevelClass.addMethod(method);
     }
 
     @Override
@@ -55,7 +71,6 @@ public class ExampleGenerator extends AbstractJavaGenerator {
         progressCallback.startTask(getString(
                 "Progress.6", table.toString())); //$NON-NLS-1$
         CommentGenerator commentGenerator = context.getCommentGenerator();
-
         FullyQualifiedJavaType type = new FullyQualifiedJavaType(
                 introspectedTable.getExampleType());
         TopLevelClass topLevelClass = new TopLevelClass(type);
@@ -95,6 +110,10 @@ public class ExampleGenerator extends AbstractJavaGenerator {
         method.addBodyLine("return orderByClause;"); //$NON-NLS-1$
         commentGenerator.addGeneralMethodComment(method, introspectedTable);
         topLevelClass.addMethod(method);
+
+        this.add("limit",PrimitiveTypeWrapper.getIntegerInstance(),commentGenerator,topLevelClass,introspectedTable);
+        this.add("offset",PrimitiveTypeWrapper.getIntegerInstance(),commentGenerator,topLevelClass,introspectedTable);
+        this.add("shardDate",PrimitiveTypeWrapper.getDateInstance(),commentGenerator,topLevelClass,introspectedTable);
 
         // add field, getter, setter for distinct
         field = new Field("distinct", FullyQualifiedJavaType.getBooleanPrimitiveInstance()); //$NON-NLS-1$

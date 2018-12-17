@@ -1,5 +1,5 @@
 /**
- *    Copyright 2006-2017 the original author or authors.
+ *    Copyright 2006-2018 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -114,6 +114,7 @@ public class InsertSelectiveElementGenerator extends
             sb.setLength(0);
             sb.append(introspectedColumn.getJavaProperty());
             sb.append(" != null"); //$NON-NLS-1$
+
             XmlElement insertNotNullElement = new XmlElement("if"); //$NON-NLS-1$
             insertNotNullElement.addAttribute(new Attribute(
                     "test", sb.toString())); //$NON-NLS-1$
@@ -123,7 +124,14 @@ public class InsertSelectiveElementGenerator extends
                     .getEscapedColumnName(introspectedColumn));
             sb.append(',');
             insertNotNullElement.addElement(new TextElement(sb.toString()));
-            insertTrimElement.addElement(insertNotNullElement);
+            boolean isTime= MyBatis3FormattingUtilities.getEscapedColumnName(introspectedColumn).equals("Fmodify_time")
+                    || MyBatis3FormattingUtilities.getEscapedColumnName(introspectedColumn).equals("Fcreate_time");
+
+            if(isTime){
+                insertTrimElement.addElement(new TextElement(sb.toString()));
+            }else {
+                insertTrimElement.addElement(insertNotNullElement);
+            }
 
             sb.setLength(0);
             sb.append(introspectedColumn.getJavaProperty());
@@ -137,7 +145,11 @@ public class InsertSelectiveElementGenerator extends
                     .getParameterClause(introspectedColumn));
             sb.append(',');
             valuesNotNullElement.addElement(new TextElement(sb.toString()));
-            valuesTrimElement.addElement(valuesNotNullElement);
+            if(isTime){
+                valuesTrimElement.addElement(new TextElement("now(),"));
+            }else {
+                valuesTrimElement.addElement(valuesNotNullElement);
+            }
         }
 
         if (context.getPlugins().sqlMapInsertSelectiveElementGenerated(
